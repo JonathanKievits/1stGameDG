@@ -6,6 +6,13 @@
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 	import flash.events.KeyboardEvent;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+	import flash.media.Sound;
+	import flash.media.SoundChannel;
+	import flash.media.SoundTransform;
+	import flash.net.URLRequest;
+	import flash.media.SoundMixer;
 	
 	public class Main extends MovieClip {
 
@@ -19,17 +26,28 @@
 		private var PlayerAlive:Boolean = true;
 		private var pPlace:int = 0;
 		private var score:Number = 0;
+		private var Hscore:Number = 0;
+		private var Tscore:TextField = new TextField;
+		private var GDO:TextField = new TextField;
+		private var Tformat:TextFormat = new TextFormat;
 		private var dead:Boolean = false;
 		private var Sstart:Boolean = true;
+		private var GetDO:Boolean = false;
+		private var req:URLRequest = new URLRequest("music/GDO.mp3");
+		private var gj:URLRequest = new URLRequest("music/GJ.mp3");
+		private var sGDO:Sound = new Sound(req);
+		private var GJ:Sound = new Sound(gj);
 		
 		public var arrows:Array = [];
 		
 		public function Main() {
 			
 			addEventListener(Event.ENTER_FRAME, loop);
+			addEventListener(Event.ENTER_FRAME, musicP);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, pMove);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, deadManWalking);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, start);
+			
 			
 			addChild(Player)
 			addChild(sScreen);
@@ -54,6 +72,13 @@
 			} else if (Sstart == false){
 				stage.removeEventListener(KeyboardEvent.KEY_DOWN, start);
 			}
+		}
+		function musicP(e:Event):void{
+			if (score > 10)
+				{
+					GJ.play()
+					removeEventListener(Event.ENTER_FRAME,musicP);
+				}
 		}
 		function tijd(te:TimerEvent):void{
 			arrows.push(new arrow());
@@ -106,6 +131,11 @@
 				}
 			}
 			
+			if (score > Hscore)
+				{
+					Hscore = score;
+				}
+			
 			if (PlayerAlive == false)
 			{
 				removeChild(Player);
@@ -114,29 +144,59 @@
 				t.removeEventListener(TimerEvent.TIMER, tijd);
 				speedUp.removeEventListener(TimerEvent.TIMER, speedIsKey);
 				newSpeed = -30;
-				score = 0;
 				PlayerAlive = true;
 				tOver.start();
 			}
+			Tscore.text = "High score: "+ Hscore;
+			GDO.text = "geeettttttt dunked on!!!";
+			Tscore.textColor = 0xFFFFFF;
+			GDO.textColor = 0xFFFFFF;
+			Tformat.font = "Comic Sans MS";
+			Tformat.size = 24;
+			Tscore.width = 300;
+			GDO.width = 300;
+			Tscore.defaultTextFormat = Tformat;
+			GDO.defaultTextFormat = Tformat;
 		}
 		function gameOver(e:Event):void
 		{
+			SoundMixer.stopAll()
 			tOver.stop();
 			addChild(gOScreen);
 			gOScreen.x = 275;
 			gOScreen.y = 200;
+			addChild(Tscore);
+			Tscore.x = 210;
+			Tscore.y = 350;
+			if (score == 0)
+			{
+				addChild(GDO);
+				GetDO = true;
+				GDO.x = 145;
+				GDO.y = 280;
+				sGDO.play();
+			}
 			dead = true;
 		}
 		function deadManWalking(event:KeyboardEvent):void {
 			if (dead == true){
 				if (event.keyCode == Keyboard.SPACE){
+					score = 0;
 					addChild(Player);
 					t.addEventListener(TimerEvent.TIMER, tijd);
 					speedUp.addEventListener(TimerEvent.TIMER, speedIsKey);
+					addEventListener(Event.ENTER_FRAME, musicP);
 					t.start();
 					speedUp.start();
 					removeChild(gOScreen);
+					removeChild(Tscore);
 					dead = false;
+					if (GetDO == true)
+					{
+						removeChild(GDO);
+						GetDO = false;
+						SoundMixer.stopAll()
+					}
 				}
 			}
 		}
