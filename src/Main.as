@@ -24,6 +24,7 @@
 		private var sPlayer:SPlayer = new SPlayer;
 		private var gOScreen:goScreen = new goScreen;
 		private var sScreen:startScreen = new startScreen;
+		private var mScreen:soundScreen = new soundScreen;
 		private var PlayerAlive:Boolean = true;
 		private var pPlace:int = 0;
 		private var score:Number = 0;
@@ -51,17 +52,27 @@
 			addEventListener(Event.ENTER_FRAME, UTActivated);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, pMove);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, deadManWalking);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, start);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, fstart);
 			
 			
 			addChild(sPlayer)
-			addChild(sScreen);
-			sScreen.x = 275;
-			sScreen.y = 200;
+			addChild(mScreen);
+			mScreen.x = 275;
+			mScreen.y = 200;
 			
 			sPlayer.y = 100;
 			sPlayer.x = 100;
 		}
+			function fstart(event:KeyboardEvent):void {
+				if(event.keyCode == Keyboard.SPACE){
+					removeChild(mScreen);
+					addChild(sScreen);
+					sScreen.x = 275;
+					sScreen.y = 200;
+					stage.addEventListener(KeyboardEvent.KEY_DOWN, start);
+					stage.removeEventListener(KeyboardEvent.KEY_DOWN, fstart);
+				}
+			}
 			function start(event:KeyboardEvent):void {
 			
 			if (Sstart == true){
@@ -251,5 +262,4 @@
 			}
 		}
 	}
-	
 }
