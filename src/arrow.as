@@ -23,7 +23,7 @@
 			}else{
 				this.y = 300;
 			}
-			this.x = 550;
+			this.x = 650;
 		}
 		function rfs(e:Event):void{
 			this.removeEventListener(Event.ENTER_FRAME, loop);
