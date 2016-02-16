@@ -13,6 +13,7 @@
 	import flash.media.SoundTransform;
 	import flash.net.URLRequest;
 	import flash.media.SoundMixer;
+	import flash.net.SharedObject;
 	
 	public class Main extends MovieClip {
 
@@ -25,6 +26,7 @@
 		private var gOScreen:goScreen = new goScreen;
 		private var sScreen:startScreen = new startScreen;
 		private var mScreen:soundScreen = new soundScreen;
+		private var fScreen:Timer = new Timer(3000, 1);
 		private var PlayerAlive:Boolean = true;
 		private var pPlace:int = 0;
 		private var score:Number = 0;
@@ -42,6 +44,7 @@
 		private var GJ:Sound = new Sound(gj);
 		private var BgM:Sound = new Sound(bgm);
 		private var UT:Boolean = false;
+		private var save:SharedObject;
 		
 		public var arrows:Array = [];
 		
@@ -52,7 +55,9 @@
 			addEventListener(Event.ENTER_FRAME, UTActivated);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, pMove);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, deadManWalking);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, fstart);
+			fScreen.addEventListener(TimerEvent.TIMER, fstart);
+			
+			getData();
 			
 			
 			addChild(sPlayer)
@@ -62,16 +67,16 @@
 			
 			sPlayer.y = 100;
 			sPlayer.x = 100;
+			fScreen.start();
 		}
-			function fstart(event:KeyboardEvent):void {
-				if(event.keyCode == Keyboard.SPACE){
-					removeChild(mScreen);
-					addChild(sScreen);
-					sScreen.x = 275;
-					sScreen.y = 200;
-					stage.addEventListener(KeyboardEvent.KEY_DOWN, start);
-					stage.removeEventListener(KeyboardEvent.KEY_DOWN, fstart);
-				}
+			function fstart(te:TimerEvent):void {
+				removeChild(mScreen);
+				fScreen.stop();
+				addChild(sScreen);
+				sScreen.x = 275;
+				sScreen.y = 200;
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, start);
+				fScreen.removeEventListener(TimerEvent.TIMER, fstart);
 			}
 			function start(event:KeyboardEvent):void {
 			
@@ -89,9 +94,25 @@
 				stage.removeEventListener(KeyboardEvent.KEY_DOWN, start);
 			}
 		}
+		function getData():void{
+			save = SharedObject.getLocal("save");
+			if (save.data.Highscore != null){
+				Hscore = save.data.Highscore;
+			}else{
+				save.data.Highscore = 0;
+				Hscore = save.data.Highscore;
+				save.flush(10000);
+			}
+			save.close();
+		}
+		function setData():void{
+			save.data.Highscore = Hscore;
+			save.flush(1000);
+			save.close();
+		}
 		function UTActivated(e:Event):void{
+			if(score > 59){
 			if(dead == true){
-			if(score > 60){
 				UT = true;
 				Player.x = 100;
 				removeEventListener(Event.ENTER_FRAME, UTActivated);
@@ -185,6 +206,7 @@
 			if (score > Hscore)
 				{
 					Hscore = score;
+					setData();
 				}
 			
 			if (PlayerAlive == false)
