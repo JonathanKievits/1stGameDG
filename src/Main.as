@@ -18,11 +18,13 @@
 	public class Main extends MovieClip {
 
 		private var t:Timer = new Timer(1000, 0);
-		private var speedUp:Timer = new Timer(6000, 0);
+		private var t2:Timer = new Timer(1750, 0);
+		private var speedUp:Timer = new Timer(7000, 0);
 		private var tOver:Timer = new Timer(0,1);
 		private var newSpeed:int = -30;
 		private var Player:player = new player;
 		private var sPlayer:SPlayer = new SPlayer;
+		private var SpeedyUp:SpeedUp = new SpeedUp;
 		private var gOScreen:goScreen = new goScreen;
 		private var sScreen:startScreen = new startScreen;
 		private var mScreen:soundScreen = new soundScreen;
@@ -32,14 +34,19 @@
 		private var score:Number = 0;
 		private var Hscore:Number = 0;
 		private var Tscore:TextField = new TextField;
+		private var speedM:TextField = new TextField;
 		private var GDO:TextField = new TextField;
 		private var Tformat:TextFormat = new TextFormat;
 		private var dead:Boolean = false;
 		private var Sstart:Boolean = true;
 		private var GetDO:Boolean = false;
+		private var SUHello:Boolean = true;
 		private var req:URLRequest = new URLRequest("music/GDO.mp3");
 		private var gj:URLRequest = new URLRequest("music/GJ.mp3");
 		private var bgm:URLRequest = new URLRequest("music/BgM.mp3");
+		private var CGJ:SoundChannel = new SoundChannel();
+		private var CBgM:SoundChannel = new SoundChannel();
+		private var volumeAdjust:SoundTransform = new SoundTransform();
 		private var sGDO:Sound = new Sound(req);
 		private var GJ:Sound = new Sound(gj);
 		private var BgM:Sound = new Sound(bgm);
@@ -49,7 +56,6 @@
 		public var arrows:Array = [];
 		
 		public function Main() {
-			
 			addEventListener(Event.ENTER_FRAME, loop);
 			addEventListener(Event.ENTER_FRAME, musicP);
 			addEventListener(Event.ENTER_FRAME, UTActivated);
@@ -58,6 +64,8 @@
 			fScreen.addEventListener(TimerEvent.TIMER, fstart);
 			
 			getData();
+			
+			volumeAdjust.volume = 0.3;
 			
 			
 			addChild(sPlayer)
@@ -84,11 +92,16 @@
 				if (event.keyCode == Keyboard.SPACE){
 					removeChild(sScreen);
 					t.start();
+					t2.start();
 					speedUp.start();
 					t.addEventListener(TimerEvent.TIMER, tijd);
+					t2.addEventListener(TimerEvent.TIMER, tijd2);
 					speedUp.addEventListener(TimerEvent.TIMER, speedIsKey);
 					tOver.addEventListener(TimerEvent.TIMER, gameOver);
 					Sstart = false;
+					addChild(speedM);
+					speedM.x = 50;
+					speedM.y = 350;
 				}
 			} else if (Sstart == false){
 				stage.removeEventListener(KeyboardEvent.KEY_DOWN, start);
@@ -123,15 +136,18 @@
 			if(UT == true){
 				if (score > 0)
 					{
-						SoundMixer.stopAll()
-						GJ.play()
+						SoundMixer.stopAll();
+						CGJ = GJ.play();
+						CGJ.soundTransform = volumeAdjust;
 						removeEventListener(Event.ENTER_FRAME,musicP);
+						
 					}
 				}else if (UT == false){
 					if (score > 0)
 					{
-						SoundMixer.stopAll()
-						BgM.play()
+						SoundMixer.stopAll();
+						CBgM = BgM.play();
+						CBgM.soundTransform = volumeAdjust;
 						removeEventListener(Event.ENTER_FRAME,musicP);
 					}
 				}
@@ -142,23 +158,39 @@
 			addChild(arrows[arrows.length -1]);
 			arrows[arrows.length -1].addEventListener(arrow.ARROW_OUT_OF_BOUNDS, deleteArrow);
 		}
+		function tijd2(te:TimerEvent):void{
+			arrows.push(new arrow());
+			arrows[arrows.length-1].speed = newSpeed;
+			addChild(arrows[arrows.length -1]);
+			arrows[arrows.length -1].addEventListener(arrow.ARROW_OUT_OF_BOUNDS, deleteArrow);
+		}
 		function speedIsKey(te:TimerEvent):void
 		{
 			for(var i:int = 0; i < arrows.length; i++){
 				newSpeed += -5;
 			}
-			
+			if(SUHello == true)
+				{
+					addChild(SpeedyUp);
+					SpeedyUp.x = 450;
+					SpeedyUp.y = 30;
+					SUHello = false;
+				}
 			if (newSpeed < -150)
 			{
 				speedUp.removeEventListener(TimerEvent.TIMER, speedIsKey);
 			}
 		}
-	
 		function deleteArrow(e:Event):void{
 			var Arrow:arrow = e.target as arrow;
 			removeChild(Arrow);	
 			arrows.splice(arrows.indexOf(Arrow),1);
 			score++;
+			if(SUHello == false)
+			{
+				removeChild(SpeedyUp);
+				SUHello = true;
+			}
 		}
 		
 		function pMove(event:KeyboardEvent):void{
@@ -172,6 +204,15 @@
 					pPlace = 0;
 				}
 			} else if(pPlace == 0){
+				if (event.keyCode == Keyboard.SPACE){
+					if (UT == false){
+						sPlayer.y = 200;
+					}else if (UT == true){
+						Player.y = 200;
+					}
+					pPlace = 2;
+				}
+			} else if(pPlace == 2){
 				if (event.keyCode == Keyboard.SPACE){
 					if (UT == false){
 						sPlayer.y = 300;
@@ -217,22 +258,29 @@
 					removeChild(Player);
 				}
 				t.stop();
+				t2.stop();
 				speedUp.stop();
 				t.removeEventListener(TimerEvent.TIMER, tijd);
+				t2.removeEventListener(TimerEvent.TIMER, tijd2);
 				speedUp.removeEventListener(TimerEvent.TIMER, speedIsKey);
 				newSpeed = -30;
 				PlayerAlive = true;
 				tOver.start();
+				removeChild(speedM);
 			}
 			Tscore.text = "High score: "+ Hscore;
+				speedM.text = "Arrow speed: "+ (newSpeed *-1);
 			GDO.text = "geeettttttt dunked on!!!";
 			Tscore.textColor = 0xFFFFFF;
+			speedM.textColor = 0xFFFFFF;
 			GDO.textColor = 0xFFFFFF;
 			Tformat.font = "Comic Sans MS";
 			Tformat.size = 24;
 			Tscore.width = 300;
+			speedM.width = 300;
 			GDO.width = 300;
 			Tscore.defaultTextFormat = Tformat;
+			speedM.defaultTextFormat = Tformat;
 			GDO.defaultTextFormat = Tformat;
 		}
 		function gameOver(e:Event):void
@@ -243,7 +291,7 @@
 			gOScreen.x = 275;
 			gOScreen.y = 200;
 			addChild(Tscore);
-			Tscore.x = 210;
+			Tscore.x = 190;
 			Tscore.y = 350;
 			if(UT == true){
 				if (score == 0)
@@ -267,12 +315,21 @@
 						addChild(Player);
 					}
 					t.addEventListener(TimerEvent.TIMER, tijd);
+					t2.addEventListener(TimerEvent.TIMER, tijd2);
 					speedUp.addEventListener(TimerEvent.TIMER, speedIsKey);
 					addEventListener(Event.ENTER_FRAME, musicP);
 					t.start();
+					t2.start();
 					speedUp.start();
+					if(SUHello == false){
+						removeChild(SpeedyUp);
+						SUHello = true;
+					}
 					removeChild(gOScreen);
 					removeChild(Tscore);
+					addChild(speedM);
+					speedM.x = 50;
+					speedM.y = 350;
 					dead = false;
 					if (GetDO == true)
 					{

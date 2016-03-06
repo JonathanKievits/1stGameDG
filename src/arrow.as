@@ -16,12 +16,14 @@
 		}
 		
 		public function init(e:Event) {
-			var place = Math.round(Math.random());			
+			var place = Math.ceil(Math.random()*4);			
 			
-			if (place == 0){
+			if (place == 1){
 				this.y = 100;
-			}else{
+			}else if (place == 2){
 				this.y = 300;
+			}else{
+				this.y = 200;
 			}
 			this.x = 650;
 		}
