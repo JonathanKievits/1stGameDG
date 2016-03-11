@@ -23,6 +23,7 @@
 		private var tOver:Timer = new Timer(0,1);
 		private var newSpeed:int = -30;
 		private var Player:player = new player;
+		private var Cloud:cloud = new cloud;
 		private var sPlayer:SPlayer = new SPlayer;
 		private var SpeedyUp:SpeedUp = new SpeedUp;
 		private var gOScreen:goScreen = new goScreen;
@@ -36,21 +37,30 @@
 		private var Tscore:TextField = new TextField;
 		private var speedM:TextField = new TextField;
 		private var GDO:TextField = new TextField;
+		private var UtLosts:TextField = new TextField;
+		private var UtLosts2:TextField = new TextField;
 		private var Tformat:TextFormat = new TextFormat;
+		private var Tformat2:TextFormat = new TextFormat;
 		private var dead:Boolean = false;
+		private var cL:Boolean = false;
 		private var Sstart:Boolean = true;
 		private var GetDO:Boolean = false;
 		private var SUHello:Boolean = true;
 		private var req:URLRequest = new URLRequest("music/GDO.mp3");
 		private var gj:URLRequest = new URLRequest("music/GJ.mp3");
 		private var bgm:URLRequest = new URLRequest("music/BgM.mp3");
+		private var lost:URLRequest = new URLRequest("music/Lost.mp3");
+		private var loser:URLRequest = new URLRequest("music/Loser.mp3");
 		private var CGJ:SoundChannel = new SoundChannel();
 		private var CBgM:SoundChannel = new SoundChannel();
 		private var volumeAdjust:SoundTransform = new SoundTransform();
 		private var sGDO:Sound = new Sound(req);
 		private var GJ:Sound = new Sound(gj);
 		private var BgM:Sound = new Sound(bgm);
+		private var UtLost:Sound = new Sound(lost);
+		private var NLoser:Sound = new Sound(loser);
 		private var UT:Boolean = false;
+		private var UTL:Boolean = false;
 		private var save:SharedObject;
 		
 		public var arrows:Array = [];
@@ -101,7 +111,7 @@
 					Sstart = false;
 					addChild(speedM);
 					speedM.x = 50;
-					speedM.y = 350;
+					speedM.y = 370;
 				}
 			} else if (Sstart == false){
 				stage.removeEventListener(KeyboardEvent.KEY_DOWN, start);
@@ -124,13 +134,13 @@
 			save.close();
 		}
 		function UTActivated(e:Event):void{
-			if(score > 59){
-			if(dead == true){
-				UT = true;
-				Player.x = 100;
-				removeEventListener(Event.ENTER_FRAME, UTActivated);
-		  }
-		  }
+			if(score > 49){
+				if(dead == true){
+					UT = true;
+					Player.x = 100;
+					removeEventListener(Event.ENTER_FRAME, UTActivated);
+				}
+			}
 		}
 		function musicP(e:Event):void{
 			if(UT == true){
@@ -198,6 +208,13 @@
 				if (event.keyCode == Keyboard.SPACE){
 					if (UT == false){
 						sPlayer.y = 100;
+						if(cL == false)
+						{
+							addChild(Cloud);
+							Cloud.x = 100
+							Cloud.y = 150
+							cL = true
+						}
 					}else if (UT == true){
 						Player.y = 100;
 					}
@@ -207,6 +224,10 @@
 				if (event.keyCode == Keyboard.SPACE){
 					if (UT == false){
 						sPlayer.y = 200;
+						if(cL == true)
+							{
+								Cloud.y = 250
+							}
 					}else if (UT == true){
 						Player.y = 200;
 					}
@@ -216,6 +237,11 @@
 				if (event.keyCode == Keyboard.SPACE){
 					if (UT == false){
 						sPlayer.y = 300;
+						if(cL == true)
+							{
+								removeChild(Cloud);
+								cL = false
+							}
 					}else if (UT == true){
 						Player.y = 300;
 					}
@@ -232,13 +258,13 @@
 				if(UT == false){
 					if (sPlayer.hitTestObject(arrows[i])){
 						removeChild(arrows[i]);
-						arrows.splice(arrows[i]);
+						arrows.splice(i,1);
 						PlayerAlive = false;
 					}
 				}else if (UT == true){
 					if (Player.hitTestObject(arrows[i])){
 						removeChild(arrows[i]);
-						arrows.splice(arrows[i]);
+						arrows.splice(i, 1);
 						PlayerAlive = false;
 					}
 				}
@@ -271,17 +297,27 @@
 			Tscore.text = "High score: "+ Hscore;
 				speedM.text = "Arrow speed: "+ (newSpeed *-1);
 			GDO.text = "geeettttttt dunked on!!!";
+			UtLosts.text = "You can not give up just yet...";
+			UtLosts2.text = "Stay determined...";
 			Tscore.textColor = 0xFFFFFF;
 			speedM.textColor = 0xFFFFFF;
 			GDO.textColor = 0xFFFFFF;
+			UtLosts.textColor = 0xFFFFFF;
+			UtLosts2.textColor = 0xFFFFFF;
 			Tformat.font = "Comic Sans MS";
+			Tformat2.font = "8-Bit Madness";
 			Tformat.size = 24;
+			Tformat2.size = 30;
 			Tscore.width = 300;
 			speedM.width = 300;
 			GDO.width = 300;
+			UtLosts.width = 600;
+			UtLosts2.width = 300;
 			Tscore.defaultTextFormat = Tformat;
-			speedM.defaultTextFormat = Tformat;
+			speedM.defaultTextFormat = Tformat2;
 			GDO.defaultTextFormat = Tformat;
+			UtLosts.defaultTextFormat = Tformat2;
+			UtLosts2.defaultTextFormat = Tformat2;
 		}
 		function gameOver(e:Event):void
 		{
@@ -293,6 +329,10 @@
 			addChild(Tscore);
 			Tscore.x = 190;
 			Tscore.y = 350;
+			for(var i:int = 0; i < arrows.length; i++){
+				removeChild(arrows[i]);
+				arrows.splice(i,1);
+			}
 			if(UT == true){
 				if (score == 0)
 				{
@@ -301,7 +341,18 @@
 					GDO.x = 145;
 					GDO.y = 280;
 					sGDO.play();
+				}else{
+					addChild(UtLosts);
+					addChild(UtLosts2);
+					UtLosts.x = 100;
+					UtLosts2.x = 160;
+					UtLosts.y = 260;
+					UtLosts2.y = 300;
+					UtLost.play();
+					UTL = true
 				}
+			}else{
+				NLoser.play()
 			}
 			dead = true;
 		}
@@ -313,6 +364,10 @@
 						addChild(sPlayer);
 					}else if (UT == true){
 						addChild(Player);
+						if(cL == true){
+							removeChild(Cloud);
+							cL = false;
+						}
 					}
 					t.addEventListener(TimerEvent.TIMER, tijd);
 					t2.addEventListener(TimerEvent.TIMER, tijd2);
@@ -329,12 +384,19 @@
 					removeChild(Tscore);
 					addChild(speedM);
 					speedM.x = 50;
-					speedM.y = 350;
+					speedM.y = 370;
 					dead = false;
 					if (GetDO == true)
 					{
 						removeChild(GDO);
 						GetDO = false;
+						SoundMixer.stopAll()
+					}else if (UTL == true){
+						removeChild(UtLosts);
+						removeChild(UtLosts2);
+						SoundMixer.stopAll()
+						UTL = false
+					}else{
 						SoundMixer.stopAll()
 					}
 				}

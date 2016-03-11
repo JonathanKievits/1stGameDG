@@ -33,7 +33,7 @@
 		public function loop(e:Event):void{
 			this.x += speed;
 			
-			if (this.x < -100){
+			if (this.x < -200){
 				dispatchEvent(new Event(ARROW_OUT_OF_BOUNDS));
 				this.removeEventListener(Event.ENTER_FRAME, loop);
 			}
