@@ -18,11 +18,13 @@
 	public class Main extends MovieClip {
 
 		private var t:Timer = new Timer(1000, 0);
-		private var t2:Timer = new Timer(1750, 0);
-		private var speedUp:Timer = new Timer(7000, 0);
+		private var t2:Timer = new Timer(1700, 0);
+		private var t3:Timer = new Timer(14500, 0);
+		private var speedUp:Timer = new Timer(10000, 0);
 		private var tOver:Timer = new Timer(0,1);
-		private var newSpeed:int = -30;
+		private var newSpeed:int = -10;
 		private var Player:player = new player;
+		private var kMan:Kmann = new Kmann
 		private var Cloud:cloud = new cloud;
 		private var sPlayer:SPlayer = new SPlayer;
 		private var SpeedyUp:SpeedUp = new SpeedUp;
@@ -31,7 +33,7 @@
 		private var mScreen:soundScreen = new soundScreen;
 		private var fScreen:Timer = new Timer(3000, 1);
 		private var PlayerAlive:Boolean = true;
-		private var pPlace:int = 0;
+		private var pPlace:int = 2;
 		private var score:Number = 0;
 		private var Hscore:Number = 0;
 		private var Tscore:TextField = new TextField;
@@ -64,6 +66,7 @@
 		private var save:SharedObject;
 		
 		public var arrows:Array = [];
+		public var powers:Array = [];
 		
 		public function Main() {
 			addEventListener(Event.ENTER_FRAME, loop);
@@ -77,14 +80,10 @@
 			
 			volumeAdjust.volume = 0.3;
 			
-			
-			addChild(sPlayer)
 			addChild(mScreen);
 			mScreen.x = 275;
 			mScreen.y = 200;
 			
-			sPlayer.y = 100;
-			sPlayer.x = 100;
 			fScreen.start();
 		}
 			function fstart(te:TimerEvent):void {
@@ -101,13 +100,21 @@
 			if (Sstart == true){
 				if (event.keyCode == Keyboard.SPACE){
 					removeChild(sScreen);
-					t.start();
-					t2.start();
-					speedUp.start();
+					addChild(kMan);
+					kMan.x = 275;
+					kMan.y = 200;
+					addChild(sPlayer)
+					sPlayer.y = 300;
+					sPlayer.x = 100;
 					t.addEventListener(TimerEvent.TIMER, tijd);
 					t2.addEventListener(TimerEvent.TIMER, tijd2);
+					t3.addEventListener(TimerEvent.TIMER, tijd3);
 					speedUp.addEventListener(TimerEvent.TIMER, speedIsKey);
 					tOver.addEventListener(TimerEvent.TIMER, gameOver);
+					t.start();
+					t2.start();
+					t3.start();
+					speedUp.start();
 					Sstart = false;
 					addChild(speedM);
 					speedM.x = 50;
@@ -134,7 +141,7 @@
 			save.close();
 		}
 		function UTActivated(e:Event):void{
-			if(score > 49){
+			if(score > 74){
 				if(dead == true){
 					UT = true;
 					Player.x = 100;
@@ -147,7 +154,7 @@
 				if (score > 0)
 					{
 						SoundMixer.stopAll();
-						CGJ = GJ.play();
+						CGJ = GJ.play(0,9999);
 						CGJ.soundTransform = volumeAdjust;
 						removeEventListener(Event.ENTER_FRAME,musicP);
 						
@@ -156,7 +163,7 @@
 					if (score > 0)
 					{
 						SoundMixer.stopAll();
-						CBgM = BgM.play();
+						CBgM = BgM.play(0,9999);
 						CBgM.soundTransform = volumeAdjust;
 						removeEventListener(Event.ENTER_FRAME,musicP);
 					}
@@ -174,10 +181,16 @@
 			addChild(arrows[arrows.length -1]);
 			arrows[arrows.length -1].addEventListener(arrow.ARROW_OUT_OF_BOUNDS, deleteArrow);
 		}
+		function tijd3(te:TimerEvent):void{
+			powers.push(new PowerUp());
+			powers[powers.length-1].speed = newSpeed;
+			addChild(powers[powers.length -1]);
+			powers[powers.length -1].addEventListener(PowerUp.POWER_OUT_OF_BOUNDS, deletePowerUP);
+		}
 		function speedIsKey(te:TimerEvent):void
 		{
 			for(var i:int = 0; i < arrows.length; i++){
-				newSpeed += -5;
+				newSpeed += -2;
 			}
 			if(SUHello == true)
 				{
@@ -201,6 +214,11 @@
 				removeChild(SpeedyUp);
 				SUHello = true;
 			}
+		}
+		function deletePowerUP(e:Event):void{
+			var powerUp:PowerUp = e.target as PowerUp;
+			removeChild(powerUp);	
+			powers.splice(powers.indexOf(powerUp),1);
 		}
 		
 		function pMove(event:KeyboardEvent):void{
@@ -252,6 +270,11 @@
 		
 		function loop(e:Event):void
 		{
+			kMan.x += -4.20;
+			if (kMan.x < -593)
+			{
+				kMan.x = 230.75;
+			}
 			scoreb.text = new String(score);
 			for (var i =0; i < arrows.length; i++)
 			{
@@ -266,6 +289,22 @@
 						removeChild(arrows[i]);
 						arrows.splice(i, 1);
 						PlayerAlive = false;
+					}
+				}
+			}
+			for (var r =0; r < powers.length; r++)
+			{
+				if(UT == false){
+					if (sPlayer.hitTestObject(powers[r])){
+						removeChild(powers[r]);
+						powers.splice(r,1);
+						score += 5;
+					}
+				}else if (UT == true){
+					if (Player.hitTestObject(powers[r])){
+						removeChild(powers[r]);
+						powers.splice(r, 1);
+						score += 5;
 					}
 				}
 			}
@@ -285,17 +324,19 @@
 				}
 				t.stop();
 				t2.stop();
+				t3.stop();
 				speedUp.stop();
 				t.removeEventListener(TimerEvent.TIMER, tijd);
 				t2.removeEventListener(TimerEvent.TIMER, tijd2);
+				t3.removeEventListener(TimerEvent.TIMER, tijd3);
 				speedUp.removeEventListener(TimerEvent.TIMER, speedIsKey);
-				newSpeed = -30;
+				newSpeed = -10;
 				PlayerAlive = true;
 				tOver.start();
 				removeChild(speedM);
 			}
 			Tscore.text = "High score: "+ Hscore;
-				speedM.text = "Arrow speed: "+ (newSpeed *-1);
+			speedM.text = "Arrow speed: "+ (newSpeed *-1);
 			GDO.text = "geeettttttt dunked on!!!";
 			UtLosts.text = "You can not give up just yet...";
 			UtLosts2.text = "Stay determined...";
@@ -333,6 +374,10 @@
 				removeChild(arrows[i]);
 				arrows.splice(i,1);
 			}
+			for(var o:int = 0; o < powers.length; o++){
+				removeChild(powers[o]);
+				powers.splice(o,1);
+			}
 			if(UT == true){
 				if (score == 0)
 				{
@@ -340,7 +385,7 @@
 					GetDO = true;
 					GDO.x = 145;
 					GDO.y = 280;
-					sGDO.play();
+					sGDO.play(0,9999);
 				}else{
 					addChild(UtLosts);
 					addChild(UtLosts2);
@@ -348,11 +393,11 @@
 					UtLosts2.x = 160;
 					UtLosts.y = 260;
 					UtLosts2.y = 300;
-					UtLost.play();
+					UtLost.play(0,9999);
 					UTL = true
 				}
 			}else{
-				NLoser.play()
+				NLoser.play(0,9999)
 			}
 			dead = true;
 		}
@@ -371,10 +416,12 @@
 					}
 					t.addEventListener(TimerEvent.TIMER, tijd);
 					t2.addEventListener(TimerEvent.TIMER, tijd2);
+					t3.addEventListener(TimerEvent.TIMER, tijd3);
 					speedUp.addEventListener(TimerEvent.TIMER, speedIsKey);
 					addEventListener(Event.ENTER_FRAME, musicP);
 					t.start();
 					t2.start();
+					t3.start();
 					speedUp.start();
 					if(SUHello == false){
 						removeChild(SpeedyUp);

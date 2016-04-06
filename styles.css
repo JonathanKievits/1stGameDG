@@ -1,0 +1,23 @@
+body{
+    background-color: black;
+}
+h1{
+    text-align: center;
+    color: white;
+}
+h3{
+    color: white;
+}
+#oB{
+    border: 2px solid White;
+    display: block;
+    margin: 0;
+    float: left;
+    position: fixed;
+}
+#text{
+    display: block;
+    margin: 0;
+    padding: 0;
+    float: right;
+}
