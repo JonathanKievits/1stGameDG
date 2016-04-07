@@ -72,8 +72,8 @@
 			addEventListener(Event.ENTER_FRAME, loop);
 			addEventListener(Event.ENTER_FRAME, musicP);
 			addEventListener(Event.ENTER_FRAME, UTActivated);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, pMove);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, deadManWalking);
+			stage.addEventListener(KeyboardEvent.KEY_UP, pMove);
+			stage.addEventListener(KeyboardEvent.KEY_UP, deadManWalking);
 			fScreen.addEventListener(TimerEvent.TIMER, fstart);
 			
 			getData();
@@ -92,7 +92,7 @@
 				addChild(sScreen);
 				sScreen.x = 275;
 				sScreen.y = 200;
-				stage.addEventListener(KeyboardEvent.KEY_DOWN, start);
+				stage.addEventListener(KeyboardEvent.KEY_UP, start);
 				fScreen.removeEventListener(TimerEvent.TIMER, fstart);
 			}
 			function start(event:KeyboardEvent):void {
@@ -121,7 +121,7 @@
 					speedM.y = 370;
 				}
 			} else if (Sstart == false){
-				stage.removeEventListener(KeyboardEvent.KEY_DOWN, start);
+				stage.removeEventListener(KeyboardEvent.KEY_UP, start);
 			}
 		}
 		function getData():void{
@@ -336,7 +336,7 @@
 				removeChild(speedM);
 			}
 			Tscore.text = "High score: "+ Hscore;
-			speedM.text = "Arrow speed: "+ (newSpeed *-1);
+			speedM.text = "Ball speed: "+ (newSpeed *-1);
 			GDO.text = "geeettttttt dunked on!!!";
 			UtLosts.text = "You can not give up just yet...";
 			UtLosts2.text = "Stay determined...";
